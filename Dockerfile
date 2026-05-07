@@ -25,11 +25,6 @@ RUN pecl install redis && docker-php-ext-enable redis
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Set Apache document root to public folder
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
 # Set working directory
 WORKDIR /var/www/html
 
@@ -45,8 +40,10 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Expose port 80
-EXPOSE 80
+# Configure Apache to use port 10000 (Render requirement)
+RUN sed -i 's/80/10000/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
 
-# Command to run Apache
+EXPOSE 10000
+
+# Start Apache in foreground
 CMD ["apache2-foreground"]
