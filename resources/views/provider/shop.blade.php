@@ -1,0 +1,193 @@
+<x-master-layout>
+    <?php
+        $auth_user= authSession();
+    ?>
+    <head>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script type="text/javascript" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    </head>
+    <div class="container-fluid">
+        @include('partials._provider')
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card card-block card-stretch">
+                    <div class="card-body p-0">
+                        <div class="d-flex justify-content-between align-items-center p-3 flex-wrap gap-3">
+                            <h5 class="fw-bold">{{ __('messages.all_shops') }}</h5>
+                            @if ($auth_user->can('shop add'))
+                                <a href="{{ route('shop.create') }}" class="btn btn-sm btn-primary">
+                                    <i class="fa fa-plus-circle"></i> {{ __('messages.new') }}
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="row justify-content-between gy-3">
+                    @if($auth_user->can('shop delete'))
+                        <div class="col-md-6 col-lg-4 col-xl-4">
+                            <div class="col-md-12">
+                                <form action="{{ route('shop.bulk_action') }}" id="quick-action-form"
+                                    class="form-disabled d-flex gap-3 align-items-center">
+                                    @csrf
+                                    <select name="action_type" class="form-select select2" id="quick-action-type" style="width:100%" disabled>
+                                        <option value="">{{ __('messages.no_action') }}</option>
+                                        <option value="change-status">{{ __('messages.status') }}</option>
+                                        @if ($auth_user->can('shop delete'))
+                                            <option value="delete">{{ __('messages.delete') }}</option>
+                                            <option value="restore">{{ __('messages.restore') }}</option>
+                                            <option value="permanently-delete">{{ __('messages.permanent_dlt') }}</option>
+                                        @endif
+                                    </select>
+
+                                    <div class="select-status d-none quick-action-field" id="change-status-action" style="width:100%">
+                                        <select name="status" class="form-select select2" id="status">
+                                            <option value="1">{{ __('messages.active') }}</option>
+                                            <option value="0">{{ __('messages.inactive') }}</option>
+                                        </select>
+                                    </div>
+                                    <button id="quick-action-apply" class="btn btn-primary" data-ajax="true"
+                                        data--submit="{{ route('shop.bulk_action') }}" data-datatable="reload"
+                                        data-confirmation='true'
+                                        data-title="{{ __('shop', ['form' => __('shop')]) }}"
+                                        title="{{ __('shop', ['form' => __('shop')]) }}"
+                                        data-message='{{ __('Do you want to perform this action?') }}'
+                                        disabled>{{ __('messages.apply') }}</button>
+                                </form>
+                            </div>
+                        </div>
+                    @else
+                        <div class="col-md-6 col-lg-4 col-xl-4"><div class="col-md-12"></div></div>
+                    @endif
+                    <div class="col-md-6 col-lg-4 col-xl-3">
+                        <div class="d-flex align-items-center gap-3 justify-content-end">
+                            <div class="datatable-filter ml-auto">
+                                <select name="column_status" id="column_status" class="select2 form-select" data-filter="select" style="width: 100%">
+                                    <option value="">{{ __('messages.all') }}</option>
+                                    <option value="0">{{ __('messages.inactive') }}</option>
+                                    <option value="1">{{ __('messages.active') }}</option>
+                                </select>
+                            </div>
+                            <div class="input-group input-group-search ms-2">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control dt-search" placeholder="Search...">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="datatable" class="table table-striped border"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            let canEdit = {{ json_encode($auth_user->can('shop edit')) }};
+            let canDelete = {{ json_encode($auth_user->can('shop delete')) }};
+
+            // Build columns dynamically
+            let columns = [];
+
+            // Show checkbox column only if delete is allowed
+            if (canDelete) {
+                columns.push({
+                    name: 'check',
+                    data: 'check',
+                    title: '<input type="checkbox" class="form-check-input" name="select_all_table" id="select-all-table" data-type="shop" onclick="selectAllTable(this)">',
+                    exportable: false,
+                    orderable: false,
+                    searchable: false,
+                });
+            }
+
+            // Always visible columns
+             columns.push(
+                { data: 'shop_name', name: 'shop_name', title: '{{ __('messages.shop_name') }}' },
+                // { data: 'provider_id', name: 'provider_id', title: '{{ __('messages.provider') }}' },
+                { data: 'city_id', name: 'city_id', title: '{{ __('messages.city') }}' },
+                { data: 'contact_number', name: 'contact_number', title: '{{ __('messages.contact_number') }}', orderable: false },
+                { data: 'is_active', name: 'is_active', title: '{{ __('messages.status') }}', orderable: false, searchable: false },
+            )
+
+            // Action column only if edit OR delete allowed
+            if (canEdit || canDelete) {
+                columns.push({ data: 'action', title: 'Action', orderable: false, searchable: false });
+            }
+
+            window.renderedDataTable = $('#datatable').DataTable({
+                processing: true,
+                serverSide: true,
+                autoWidth: false,
+                responsive: true,
+                dom: '<"row align-items-center"><"table-responsive my-3 mt-3 mb-2 pb-1" rt><"row align-items-center data_table_widgets" <"col-md-6" <"d-flex align-items-center flex-wrap gap-3" l i>><"col-md-6" p>><"clear">',
+                ajax: {
+                    url: "{{ route('provider.shop-list', $id) }}",
+                    data: function (d) {
+                        d.filter = {
+                            column_status: $('#column_status').val()
+                        };
+                        d.search = {
+                            value: $('.dt-search').val()
+                        };
+                    }
+                },
+                columns: columns,
+                order: [[1, 'desc']],
+                language: {
+                    processing: "{{ __('messages.processing') }}"
+                }
+            });
+
+            function resetQuickAction() {
+                const actionValue = $('#quick-action-type').val();
+
+                if (actionValue != '') {
+                    $('#quick-action-apply').removeAttr('disabled');
+                    if (actionValue == 'change-status') {
+                        $('.quick-action-field').addClass('d-none');
+                        $('#change-status-action').removeClass('d-none');
+                    } else {
+                        $('.quick-action-field').addClass('d-none');
+                    }
+                } else {
+                    $('#quick-action-apply').attr('disabled', true);
+                    $('.quick-action-field').addClass('d-none');
+                }
+            }
+
+            $('#quick-action-type').change(function() {
+                resetQuickAction();
+            });
+            $(document).on('update_quick_action', function() {
+
+            });
+
+            $(document).on('click', '[data-ajax="true"]', function(e) {
+                e.preventDefault();
+                const button = $(this);
+                const confirmation = button.data('confirmation');
+
+                if (confirmation === 'true') {
+                    const message = button.data('message');
+                    if (confirm(message)) {
+                        const submitUrl = button.data('submit');
+                        const form = button.closest('form');
+                        form.attr('action', submitUrl);
+                        form.submit();
+                    }
+                } else {
+                    const submitUrl = button.data('submit');
+                    const form = button.closest('form');
+                    form.attr('action', submitUrl);
+                    form.submit();
+                }
+            });
+        });
+    </script>
+</x-master-layout>
+
+

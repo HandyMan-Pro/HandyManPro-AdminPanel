@@ -1,0 +1,93 @@
+/**
+ * Backend custom styles (shop hours, Flatpickr dark mode, etc.)
+ * Compiled to public/css/backend-custom.min.css and loaded in backend layout.
+ */
+/* ----- Flatpickr time picker: dark mode (AM/PM visible) ----- */
+[data-bs-theme=dark] .flatpickr-calendar {
+  background: #1a1a1a !important;
+  border: 1px solid #333 !important;
+  box-shadow: 0 3px 13px rgba(0, 0, 0, 0.3);
+}
+[data-bs-theme=dark] .flatpickr-calendar.arrowTop:after {
+  border-bottom-color: #1a1a1a !important;
+}
+[data-bs-theme=dark] .flatpickr-calendar.arrowBottom:after {
+  border-top-color: #1a1a1a !important;
+}
+[data-bs-theme=dark] .flatpickr-calendar.hasTime .flatpickr-time {
+  border-top-color: #333 !important;
+}
+[data-bs-theme=dark] .flatpickr-time input,
+[data-bs-theme=dark] .flatpickr-time .flatpickr-time-separator,
+[data-bs-theme=dark] .flatpickr-time .flatpickr-am-pm {
+  color: #e0e0e0 !important;
+}
+[data-bs-theme=dark] .flatpickr-time input:hover,
+[data-bs-theme=dark] .flatpickr-time .flatpickr-am-pm:hover,
+[data-bs-theme=dark] .flatpickr-time input:focus,
+[data-bs-theme=dark] .flatpickr-time .flatpickr-am-pm:focus {
+  background: #2a2a2a !important;
+}
+[data-bs-theme=dark] .flatpickr-time .numInputWrapper span.arrowUp:after {
+  border-bottom-color: #e0e0e0 !important;
+}
+[data-bs-theme=dark] .flatpickr-time .numInputWrapper span.arrowDown:after {
+  border-top-color: #e0e0e0 !important;
+}
+[data-bs-theme=dark] .flatpickr-time .numInputWrapper span {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+[data-bs-theme=dark] .flatpickr-time .numInputWrapper:hover span {
+  opacity: 1;
+}
+
+body.dark .flatpickr-calendar {
+  background: #1a1a1a !important;
+  border: 1px solid #333 !important;
+}
+body.dark .flatpickr-calendar.hasTime .flatpickr-time {
+  border-top-color: #333 !important;
+}
+body.dark .flatpickr-time input,
+body.dark .flatpickr-time .flatpickr-time-separator,
+body.dark .flatpickr-time .flatpickr-am-pm {
+  color: #e0e0e0 !important;
+}
+body.dark .flatpickr-time input:hover,
+body.dark .flatpickr-time .flatpickr-am-pm:hover,
+body.dark .flatpickr-time input:focus,
+body.dark .flatpickr-time .flatpickr-am-pm:focus {
+  background: #2a2a2a !important;
+}
+body.dark .flatpickr-time .numInputWrapper span.arrowUp:after {
+  border-bottom-color: #e0e0e0 !important;
+}
+body.dark .flatpickr-time .numInputWrapper span.arrowDown:after {
+  border-top-color: #e0e0e0 !important;
+}
+
+.flatpickr-calendar.flatpickr-dark-mode {
+  background: #1a1a1a !important;
+}
+.flatpickr-calendar.flatpickr-dark-mode .flatpickr-time input,
+.flatpickr-calendar.flatpickr-dark-mode .flatpickr-time .flatpickr-time-separator,
+.flatpickr-calendar.flatpickr-dark-mode .flatpickr-time .flatpickr-am-pm {
+  color: #e0e0e0 !important;
+}
+.flatpickr-calendar.flatpickr-dark-mode .flatpickr-time .numInputWrapper span.arrowUp:after {
+  border-bottom-color: #e0e0e0 !important;
+}
+.flatpickr-calendar.flatpickr-dark-mode .flatpickr-time .numInputWrapper span.arrowDown:after {
+  border-top-color: #e0e0e0 !important;
+}
+
+/* ----- Shop hours: Add Break button (minimal style) ----- */
+.add-break-btn .add-break-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 0.65rem;
+}
+
+.add-break-btn:hover {
+  color: var(--bs-secondary) !important;
+}

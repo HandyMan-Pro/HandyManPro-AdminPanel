@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.iqonic.servicebooking",
+      "sha256_cert_fingerprints":
+        ["AD:EF:27:E3:5D:49:77:A8:63:AB:11:5A:66:BA:34:4D:3B:D3:CF:12:A6:BE:E9:26:E6:01:72:DC:E0:35:41:75","B1:54:04:85:C6:47:7E:1C:D3:A2:C2:A7:49:4E:01:CB:05:F5:41:C5:B8:04:41:81:A4:C0:8E:EE:37:11:88:80"]
+    }
+  }
+]
+
