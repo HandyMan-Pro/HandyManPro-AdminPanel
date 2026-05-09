@@ -45,32 +45,15 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Install PHP dependencies (no-scripts = skip DB-dependent artisan commands)
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# ======== CRITICAL: Generate fresh package discovery cache ========
-# This creates bootstrap/cache/packages.php and services.php
-# with ONLY the production packages (no dev packages)
-RUN APP_KEY=base64:dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleXQ= \
-    APP_ENV=production \
-    DB_CONNECTION=sqlite \
-    CACHE_DRIVER=file \
-    SESSION_DRIVER=file \
-    php artisan package:discover --ansi
-
 # Mark app as installed (bypass installation wizard)
 RUN touch storage/installed
 
 # Create storage link
 RUN ln -sf /var/www/html/storage/app/public /var/www/html/public/storage
 
-# Clear any remaining stale cache
-RUN APP_KEY=base64:dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleXQ= \
-    APP_ENV=production \
-    DB_CONNECTION=sqlite \
-    CACHE_DRIVER=file \
-    SESSION_DRIVER=file \
-    php artisan config:clear 2>/dev/null || true
-
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod +x docker-entrypoint.sh
 
 # Configure Apache to listen on port 10000 (Render requirement)
 RUN sed -i 's/80/10000/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
@@ -80,4 +63,4 @@ RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 EXPOSE 10000
 
-CMD ["apache2-foreground"]
+CMD ["/var/www/html/docker-entrypoint.sh"]
