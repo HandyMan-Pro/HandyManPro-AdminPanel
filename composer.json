@@ -27,6 +27,7 @@
         "tightenco/ziggy": "^1.4",
         "toin0u/geocoder-laravel": "^4.6",
         "twilio/sdk": "^8.3",
+        "mews/purifier": "^3.0",
         "yajra/laravel-datatables-oracle": "^11.0"
     },
     "require-dev": {
