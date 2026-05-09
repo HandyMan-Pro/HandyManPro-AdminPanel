@@ -45,6 +45,19 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Install PHP dependencies (no-scripts = skip DB-dependent artisan commands)
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
+# ======== CRITICAL: Generate fresh package discovery cache ========
+# This creates bootstrap/cache/packages.php and services.php
+# with ONLY the production packages (no dev packages).
+# We MUST touch database.sqlite first because App\Providers\TranslationServiceProvider 
+# runs Schema::hasTable('settings') which crashes if the DB file is missing.
+RUN touch database/database.sqlite && \
+    APP_KEY=base64:dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleXQ= \
+    APP_ENV=production \
+    DB_CONNECTION=sqlite \
+    CACHE_DRIVER=file \
+    SESSION_DRIVER=file \
+    php artisan package:discover --ansi
+
 # Mark app as installed (bypass installation wizard)
 RUN touch storage/installed
 
