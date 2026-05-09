@@ -34,20 +34,24 @@ COPY . .
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Install PHP dependencies
+# Install PHP dependencies (--no-scripts to skip DB-dependent steps)
 RUN composer install --no-dev --optimize-autoloader --no-scripts
+
+# Generate autoload files and discover packages (THIS IS THE KEY FIX)
+RUN composer dump-autoload --optimize
+RUN php artisan package:discover --ansi
 
 # Mark app as installed (bypass installation wizard)
 RUN touch storage/installed
 
-# Create storage link (public/storage -> storage/app/public)
-RUN php artisan storage:link --force 2>/dev/null || ln -sf /var/www/html/storage/app/public /var/www/html/public/storage
+# Create storage link
+RUN ln -sf /var/www/html/storage/app/public /var/www/html/public/storage
 
-# Clear any cached config from local machine
-RUN php artisan config:clear 2>/dev/null || true
-RUN php artisan cache:clear 2>/dev/null || true
-RUN php artisan view:clear 2>/dev/null || true
-RUN php artisan route:clear 2>/dev/null || true
+# Clear any stale cache
+RUN php artisan config:clear
+RUN php artisan cache:clear
+RUN php artisan view:clear
+RUN php artisan route:clear
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
@@ -55,10 +59,9 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # Configure Apache to listen on port 10000 (Render requirement)
 RUN sed -i 's/80/10000/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
 
-# Set Apache ServerName to suppress warning
+# Suppress Apache ServerName warning
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 EXPOSE 10000
 
-# Start Apache
 CMD ["apache2-foreground"]
